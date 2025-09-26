@@ -1,0 +1,162 @@
+#include "LinearProbing.h"
+
+using namespace std;
+
+LinearProbing::LinearProbing(){
+    num_of_account = 0;
+    prime = 200017;
+    Account A;
+    A.id = ""; 
+    A.balance = -1;
+    for(int i=0; i<prime; i++){
+        bankStorage1d.push_back(A);
+    }
+}
+
+LinearProbing::~LinearProbing(){
+    bankStorage1d.clear();
+}
+
+void Merge(vector<int>& V, int l, int m, int r) {
+   
+    int a = m-l+1;
+    int b = r-m;
+    vector<int> Left(a);
+    vector<int> Right(b);
+
+    for (int i = 0; i < a; i++){
+        Left[i] = V[l + i];
+    }
+    for (int j = 0; j < b; j++){
+        Right[j] = V[m + 1 + j];
+    }
+
+    int i = 0, j = 0, k = l;
+    while (i < a && j < b) {
+        if(Left[i] <= Right[j]){
+            V[k] = Left[i];
+            i++;
+        } 
+        else{
+            V[k] = Right[j];
+            j++;
+        }
+        k++;
+    }
+
+    while(i < a){
+        V[k] = Left[i];
+        i++;
+        k++;
+    }
+    while(j < b){
+        V[k] = Right[j];
+        j++;
+        k++;
+    }
+}
+
+void MergeSort(vector<int>& V, int l, int r) {
+    if (l<r) {
+        int m = l+(r-l)/2;
+        MergeSort(V, l, m);
+        MergeSort(V, m + 1, r);
+        Merge(V, l, m, r);
+    }
+}
+
+void LinearProbing::createAccount(std::string id, int count) {
+    Account acc;
+    acc.id = id; 
+    acc.balance = count;
+    int slot = hash(id);
+    while(bankStorage1d[slot].balance != -1){
+        slot = (slot+1) % prime;
+    }
+    bankStorage1d[slot].id = id;
+    bankStorage1d[slot].balance = count;
+    num_of_account++;
+}
+
+std::vector<int> LinearProbing::getTopK(int k) {
+    vector<int> ans;
+    for(int i=0; i<bankStorage1d.size(); i++){
+        if(bankStorage1d[i].balance != -1){
+            ans.push_back(bankStorage1d[i].balance);
+        }
+    }
+
+    MergeSort(ans, 0, ans.size()-1);
+
+    vector<int> TopK;
+    for(int i=0; i<k; i++){
+        TopK.push_back(ans[ans.size()-1-i]);
+    }
+    ans.clear();
+    return TopK;
+}
+
+int LinearProbing::getBalance(std::string id) {
+    if(doesExist(id)){
+        int slot = hash(id);
+        for(int i=0; i<bankStorage1d.size(); i++){
+            if(bankStorage1d[(slot+i)%prime].id == id) {
+                return bankStorage1d[(slot+i)%prime].balance;
+            }
+        }
+    }
+    return -1; 
+}
+
+void LinearProbing::addTransaction(std::string id, int count) {
+    if(doesExist(id)){
+        int slot = hash(id);
+        while(bankStorage1d[slot % prime].id != id){
+            slot++;
+        }
+        bankStorage1d[slot].balance += count;
+    }
+    else{
+        createAccount(id,count);
+    }
+}
+
+bool LinearProbing::doesExist(std::string id) {
+    int slot = hash(id);
+    for(int i=0; i<bankStorage1d.size(); i++){
+        if(bankStorage1d[(slot+i)%prime].id == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool LinearProbing::deleteAccount(std::string id) {
+    int slot = hash(id);
+    for(int i=0; i<bankStorage1d.size(); i++){
+        if(bankStorage1d[(slot+i)%prime].id == id) {
+            bankStorage1d[(slot+i)%prime].balance = -1;
+            bankStorage1d[(slot+i)%prime].id = "";
+            num_of_account--;
+            return true;
+        }
+    }
+    return false;
+}
+
+int LinearProbing::databaseSize() {
+    return num_of_account;
+}
+
+int LinearProbing::hash(std::string id) {
+    long long val=0;
+    long long h=1;
+    for(int i=0;i<id.size();i++){
+        for(int j=1; j<=i; j++){
+            h = h*2;
+        }
+        val=(val + h*(int(id[i])-'0'+1))%prime;
+    }
+    return val;
+}
+
