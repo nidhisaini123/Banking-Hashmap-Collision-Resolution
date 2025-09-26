@@ -59,7 +59,7 @@ Follow the on-screen instructions to manage bank accounts.
 - `QuadraticProbing.cpp/h` - Quadratic probing.
 - `CubicProbing.cpp/h` - Cubic probing.
 - `Comp.cpp/h` - Comparator-based hashing.
-- `problem_statement.pdf` - Project requirements.
+- `problem_statement.pdf` - Refer this for entire problem statement for this project.
 - `README.md` - Project documentation.
 
 ## Contributing
